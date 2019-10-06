@@ -13,14 +13,18 @@ import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourc
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.file.transform.PassThroughLineAggregator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 @Configuration
@@ -38,10 +42,11 @@ public class BatchConfiguration {
     public FlatFileItemReader<Person> reader() {
         return new FlatFileItemReaderBuilder<Person>()
             .name("personItemReader")
-            .resource(new ClassPathResource("sample-data.csv"))
-            .delimited()
-            .names(new String[]{"firstName", "lastName"})
-            .fieldSetMapper(new BeanWrapperFieldSetMapper<Person>() {{
+                .resource(new ClassPathResource("sample-data.csv"))
+                .delimited()
+                .names(new String[]{"firstName", "lastName"})
+                .encoding("UTF8")
+                .fieldSetMapper(new BeanWrapperFieldSetMapper<Person>() {{
                 setTargetType(Person.class);
             }})
             .build();
@@ -53,12 +58,15 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public JdbcBatchItemWriter<Person> writer(DataSource dataSource) {
-        return new JdbcBatchItemWriterBuilder<Person>()
-            .itemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>())
-            .sql("INSERT INTO people (first_name, last_name) VALUES (:firstName, :lastName)")
-            .dataSource(dataSource)
-            .build();
+    public FlatFileItemWriter<String> writer() {
+
+        return new FlatFileItemWriterBuilder<String>()
+                .name("greetingItemWriter")
+                .encoding("CP037")
+              //  .resource(new ClassPathResource("sample-data.txt").getFilename())
+                .resource(new FileSystemResource(
+                        "./greetings.csv"))
+                .lineAggregator(new PassThroughLineAggregator<>()).build();
     }
     // end::readerwriterprocessor[]
 
@@ -74,12 +82,12 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Step step1(JdbcBatchItemWriter<Person> writer) {
+    public Step step1() {
         return stepBuilderFactory.get("step1")
-            .<Person, Person> chunk(10)
+            .<Person, String> chunk(10)
             .reader(reader())
             .processor(processor())
-            .writer(writer)
+            .writer(writer())
             .build();
     }
     // end::jobstep[]

@@ -5,12 +5,12 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.batch.item.ItemProcessor;
 
-public class PersonItemProcessor implements ItemProcessor<Person, Person> {
+public class PersonItemProcessor implements ItemProcessor<Person, String> {
 
     private static final Logger log = LoggerFactory.getLogger(PersonItemProcessor.class);
 
     @Override
-    public Person process(final Person person) throws Exception {
+    public String process(final Person person) throws Exception {
         final String firstName = person.getFirstName().toUpperCase();
         final String lastName = person.getLastName().toUpperCase();
 
@@ -18,7 +18,7 @@ public class PersonItemProcessor implements ItemProcessor<Person, Person> {
 
         log.info("Converting (" + person + ") into (" + transformedPerson + ")");
 
-        return transformedPerson;
+        return transformedPerson.toString();
     }
 
 }
