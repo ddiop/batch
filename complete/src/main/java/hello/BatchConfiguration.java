@@ -2,9 +2,7 @@ package hello;
 
 import javax.sql.DataSource;
 
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecutionListener;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -36,6 +34,8 @@ public class BatchConfiguration {
 
     @Autowired
     public StepBuilderFactory stepBuilderFactory;
+    @Autowired
+    public SampleListener sampleListener;
 
     // tag::readerwriterprocessor[]
     @Bean
@@ -75,11 +75,13 @@ public class BatchConfiguration {
     public Job importUserJob(JobCompletionNotificationListener listener, Step step1) {
         return jobBuilderFactory.get("importUserJob")
             .incrementer(new RunIdIncrementer())
-            .listener(listener)
+            .listener(sampleListener)
             .flow(step1)
             .end()
             .build();
     }
+
+
 
     @Bean
     public Step step1() {
