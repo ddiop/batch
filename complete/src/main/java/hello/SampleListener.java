@@ -25,6 +25,9 @@ public class SampleListener implements JobExecutionListener {
 		else if(jobExecution.getStatus() == BatchStatus.STOPPING){
 			log.info("================================ stopping=========");
 			//job failure
+		}else if(jobExecution.getStatus() ==BatchStatus.COMPLETED){
+			log.info("================================ complete=========");
+
 		}
 	}
 

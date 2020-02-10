@@ -42,6 +42,7 @@ public class BatchConfiguration {
     public FlatFileItemReader<Person> reader() {
         return new FlatFileItemReaderBuilder<Person>()
             .name("personItemReader")
+
                 .resource(new ClassPathResource("sample-data.csv"))
                 .delimited()
                 .names(new String[]{"firstName", "lastName"})
@@ -74,6 +75,7 @@ public class BatchConfiguration {
     @Bean
     public Job importUserJob(JobCompletionNotificationListener listener, Step step1) {
         return jobBuilderFactory.get("importUserJob")
+                .preventRestart()
             .incrementer(new RunIdIncrementer())
             .listener(sampleListener)
             .flow(step1)
